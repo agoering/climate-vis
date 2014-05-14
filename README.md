@@ -26,6 +26,10 @@ If we have time, we would like to undertake several additional tasks. First, we 
 	- Precipitation - Gene
 	- Oceanic Temperature - Rudy
 	- Sea Level - Andrea
+- Week of 5/20: Clean data, make simple lat/lon plots, draft visualization
+	- Clean precipitation, temperature, and CO2 data - Andrea and Gene
+	- Add timeline cursor to existing D3 hurricane map and define data structure for - Simon
+	- Explore options for a heatmap on some global projection - Rudy
 
 ##Useful Links
 - [Gapminder](http://www.gapminder.org/)
@@ -33,5 +37,5 @@ If we have time, we would like to undertake several additional tasks. First, we 
 - [Bootstrap](http://getbootstrap.com/)
 - [Third National Climate Assessment (NCA) Report](http://www.globalchange.gov/ncadac)
 - [NY Times article about NCA Report](http://www.nytimes.com/2014/05/07/science/earth/climate-change-report.html)
-
+- [D3: mbostock's blocks](bl.ocks.org/mbostock)
 
