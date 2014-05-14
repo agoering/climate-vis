@@ -1,0 +1,1 @@
+Subfolders will be precip, temp, carbon. Additional subfolders will be added as needed. Cleaned data may or may not be placed in a separate subfolder 'clean'.
