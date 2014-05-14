@@ -1,9 +1,6 @@
-climate-vis
-===========
-
-Climate visualization team project for UO Physics Scientific Programming course.
-
 # Climate Visualization Project Overview
+Climate visualization team project for UO Physics Scientific Programming course.
+by Andrea, Gene, Rudy, and Simon
 
 ## Abstract
 We want to develop an interactive visualization that allows users to explore what correlations exist between atmospheric CO2 concentrations and hydrological variables related to global climate change. We will use data from 1850-present of the following hydrological variables: sea level, ice volume, and oceanic temperature. The visualization will likely be a moving bubble chart, in which time is represented by moving frames that will trace out a pattern (see for example www.gapminder.org).
