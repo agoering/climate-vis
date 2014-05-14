@@ -38,4 +38,4 @@ If we have time, we would like to undertake several additional tasks. First, we 
 - [Third National Climate Assessment (NCA) Report](http://www.globalchange.gov/ncadac)
 - [NY Times article about NCA Report](http://www.nytimes.com/2014/05/07/science/earth/climate-change-report.html)
 - [D3: mbostock's blocks](bl.ocks.org/mbostock)
-
+- [D3: How To Make a Map](http://bost.ocks.org/mike/map/)
