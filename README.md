@@ -18,15 +18,20 @@ We want to develop an interactive visualization that allows users to explore wha
 If we have time, we would like to undertake several additional tasks. First, we would like build an intensity worldmap visualization that allows users to explore spatiotemporal patterns in precipitation levels worldwide. Second, we would like to make projections based on historical data for hydrological variables. Third, we would like to explore non-hydrological variables, particularly economic datasets such as GDP and energy consumption, which could be plotted both on the intensity worldmap and on the moving bubble chart.
 
 ##To Do:
-- Week of 5/13: Find Data
+- Due 5/13: Find Data
 	- CO2 - Simon
 	- Precipitation - Gene
 	- Oceanic Temperature - Rudy
 	- Sea Level - Andrea
-- Week of 5/20: Clean data, make simple lat/lon plots, draft visualization
+- Due 5/20: Clean data, make simple lat/lon plots, draft visualization
 	- Clean precipitation, temperature, and CO2 data - Andrea and Gene
 	- Add timeline cursor to existing D3 hurricane map and define data structure for - Simon
 	- Explore options for a heatmap on some global projection - Rudy
+- Due 5/27: Figure out how to include data in visualization by dynamically selecting subsets, type, and how to process data.
+ 	- Simon: GUI stuff - Figure out how to do a lat/lon selector box or just type in lat/lon selections manually?
+	- Rudy: Figure out the "map" vs "trend" situation in bootstrap and whether bootstrap can work with Python and with the libraries from Gmaps, etc. 
+	- Gene: Keep cranking through interesting trends hiding in the data.
+	- Andrea: Figure out how to create a data library and standardized functions based on needs identified by Gene
 
 ##Useful Links
 - [Gapminder](http://www.gapminder.org/)
