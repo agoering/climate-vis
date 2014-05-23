@@ -20,6 +20,8 @@ CO2 Data
 ========
 One degree latitude by one degree longitude grid of carbon mass emissions from the [Carbon Dioxide Information Analysis Center (CDIAC)](http://cdiac.ornl.gov/CO2_Emission/gridded)
 
+**DOI:** 10.3334/CDIAC/ffe.AnnualIsomass.2013
+
 Co2 Data File Structure and Naming Convention
 ---------------------------------------------
 
