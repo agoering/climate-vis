@@ -32,6 +32,11 @@ If we have time, we would like to undertake several additional tasks. First, we 
 	- Rudy: Figure out the "map" vs "trend" situation in bootstrap and whether bootstrap can work with Python and with the libraries from Gmaps, etc. 
 	- Gene: Keep cranking through interesting trends hiding in the data.
 	- Andrea: Figure out how to create a data library and standardized functions based on needs identified by Gene
+- Due 5/30: 
+	- Andrea: Format 2000-2005 precip annual average data to single and separate .csv files for Simon.
+	- Simon: Working timeline given the .csv files from Andrea.
+	- Rudy: Skeleton of Bootstrap UI
+	- Gene: Send Rudy a figure for the comparison plots. 
 
 ##Useful Links
 - [Gapminder](http://www.gapminder.org/)
