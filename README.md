@@ -37,7 +37,12 @@ If we have time, we would like to undertake several additional tasks. First, we 
 	- Simon: Working timeline given the .csv files from Andrea.
 	- Rudy: Skeleton of Bootstrap UI
 	- Gene: Send Rudy a figure for the comparison plots. 
-
+- Due 6/3:
+	- Andrea: Supply non-reduced precip, temp, and CO2 datasets, explore reduction methods in Pandas. Think about looking at less global data blocks - by latitude or by continent for instance - for get happy plot. Also think about temporal filtering - summer vs winter, 
+	- Gene: Explore reduction methods
+	- Simon: Continue exploring performance enhancements for speed of year slider
+	- Rudy: See if we can host external files or come up with a backup plan in the event that Heroku is no good for us.
+	
 ##Useful Links
 - [Gapminder](http://www.gapminder.org/)
 - [Google Motion Chart](https://developers.google.com/chart/interactive/docs/gallery/motionchart?csw=1)
