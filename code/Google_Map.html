@@ -2,27 +2,33 @@
 <html>
 <head>
 <style>
-html, body, #map_canvas { margin: 0.5%; padding: 1%; height: 90%; },
+html, body, #map_canvas { margin: 0%; padding: 1%; height: 85%; },
 </style>
 <script src="http://maps.googleapis.com/maps/api/js?libraries=geometry,visualization,drawing&sensor=true_or_false"></script>
 
 <script src=../data/Map_Data.js></script>
+<script src=../data/air_tempAvg/TempData.js></script>
+<script src=../data/CO2Avg/CO2Data.js></script>
+<script src=../data/precipAvg/PrecipData.js></script>
+
 
 
 <p id="demo"></p>
 <script>
 
-var map, heatmap, data, heatmapData, drawingManager;
+var map, drawingManager, animationSpeed;
+var PrecipMap, PrecipHeatData;
+var TempMap, TempHeatData;
+var CO2Map, CO2HeatData;
 
 var maxYear = 2005;
 var minYear = 2000;
 
-var p = 9;
+var p = 1;
 
 var play = false;
 
-data = getData();
-
+//data = getData();
 
 var gradient1 = [
         'rgba(0, 255, 255, 0)',
@@ -41,7 +47,21 @@ var gradient1 = [
         'rgba(255, 0, 0, 1)'
 ];
 
-var gradient2 = [
+var gradient2 = ['rgba(0, 255, 255, 0)',
+'rgba(0, 222, 229, 1)','rgba(0, 228, 220, 1)','rgba(0, 227, 205, 1)','rgba(0, 226, 190, 1)','rgba(0, 225, 176, 0)',
+'rgba(0, 225, 162, 0)','rgba(0, 224, 147, 0)','rgba(0, 223, 133, 0)','rgba(0, 222, 119, 0)','rgba(0, 222, 105, 0)',
+'rgba(0, 221, 91, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)',
+'rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)',
+'rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)',
+'rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)',
+'rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)',
+'rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)',
+'rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)',
+'rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)','rgba(0, 255, 255, 0)'
+];
+
+
+var gradient3 = [
         'rgba(140, 255, 102, 0)',
         'rgba(140, 255, 102, 1)',
         'rgba(134, 238, 100, 1)',
@@ -59,7 +79,12 @@ var gradient2 = [
 
 function initialize() {
 
-        heatmapData = new google.maps.MVCArray();
+		setAnimationSpeed(1200);
+
+        PrecipHeatData = new google.maps.MVCArray();
+        TempHeatData = new google.maps.MVCArray();
+        CO2HeatData = new google.maps.MVCArray();
+
 
         var mapOptions = {
                 zoom: 2,
@@ -106,32 +131,96 @@ function initialize() {
             
 		});
         
-        for (var i = 1; i < data.length; i+=p) {
-                var latLng = new google.maps.LatLng(data[i][2], data[i][1]);
-                var magnitude = data[i][3]
+        for (var i = 1; i < PrecipData.length; i+=p) {
+                var latLng = new google.maps.LatLng(parseFloat(PrecipData[i][2]), parseFloat(PrecipData[i][1]));
+                var magnitude = parseFloat(PrecipData[i][3]);
                 var weightedLoc = {
                         location: latLng,
                         weight:magnitude
                 };
-                heatmapData.push(weightedLoc);
+                PrecipHeatData.push(weightedLoc);
         };
-          
-        var div = document.getElementById("parameters");
-        var spans = div.getElementsByTagName("span")
-
-        var opacity = parseFloat(spans[0].innerHTML);
-        var radius = parseFloat(spans[1].innerHTML);
         
-        heatmap = new google.maps.visualization.HeatmapLayer({
-                data: heatmapData,
+        var minTemp =parseFloat(TempData[1][3]);
+        for (var i = p; i < TempData.length; i+=p) {
+                if(minTemp>parseFloat(TempData[i][3])){
+                		minTemp=parseFloat(TempData[i][3]);
+                }
+        }
+        
+        for (var i = 1; i < TempData.length; i+=p) {
+                var latLng = new google.maps.LatLng(parseFloat(TempData[i][2]), parseFloat(TempData[i][1]));
+                var magnitude = parseFloat(TempData[i][3])-minTemp;
+                var weightedLoc = {
+                        location: latLng,
+                        weight:Math.pow(magnitude,20)
+                };
+                TempHeatData.push(weightedLoc);
+        };
+        
+        var maxTemp =TempHeatData.getAt(0).weight;
+        for (var i = 1; i < TempHeatData.getLength(); i+=1) {
+                if(maxTemp<TempHeatData.getAt(i).weight){
+                		maxTemp=TempHeatData.getAt(i).weight;
+                }
+        }
+        document.getElementById("demo").innerHTML=TempHeatData.getAt(0).weight;
+        
+        for (var i = 1; i < CO2Data.length; i+=1) {
+                var latLng = new google.maps.LatLng(parseFloat(CO2Data[i][2]), parseFloat(CO2Data[i][1]));
+                var magnitude = parseFloat(CO2Data[i][3]);
+                var weightedLoc = {
+                        location: latLng,
+                        weight:magnitude
+                };
+                CO2HeatData.push(weightedLoc);
+        };
+
+		var pre =PrecipHeatData.getAt(0).weight;
+
+        for (var i = 1; i < PrecipHeatData.getLength(); i+=1) {
+                if(pre>PrecipHeatData.getAt(i).weight){
+                		pre=PrecipHeatData.getAt(i).weight;
+                }
+        }
+        
+        document.getElementById("demo").innerHTML=pre;
+        
+        //document.getElementById("demo").innerHTML=[opacity,radius];
+
+        
+        PrecipMap = new google.maps.visualization.HeatmapLayer({
+                data: PrecipHeatData,
                 dissipating: false,
                 map: map,
-                opacity: opacity,
-                radius: radius,
                 gradient: gradient1
         });
-
-        heatmap.setMap(map);
+        
+        TempMap = new google.maps.visualization.HeatmapLayer({
+                data: TempHeatData,
+                dissipating: false,
+                map: map,
+        });
+        
+        CO2Map = new google.maps.visualization.HeatmapLayer({
+                data: CO2HeatData,
+                dissipating: false,
+                map: map,
+        });
+        
+        setGradient(gradient3,3);
+        
+        setOpacity(0.33,1);
+        setRadius(1.4,1);
+        setOpacity(0.33,2);
+        setRadius(1.4,2);
+        setOpacity(0.33,3);
+        setRadius(10,3);
+        
+        removeMap(1);
+        removeMap(2);
+        removeMap(3);
+        
 }
 
 function drawHeat(year){
@@ -139,96 +228,160 @@ function drawHeat(year){
         var index = year-minYear+3;
 
 
-        heatmapData.forEach(function(elm, i){
-        		elm.weight=data[i*p+1][index];
+        PrecipHeatData.forEach(function(elm, i){
+        		elm.weight=PrecipData[i*p+1][index];
         });
         
-        heatmap.set('data',heatmapData);
-
+        PrecipMap.set('data',PrecipHeatData);
         
-
-        var div = document.getElementById("parameters");
-        var spans = div.getElementsByTagName("span");
-
-        var opacity = parseFloat(spans[0].innerHTML);
-        var radius = parseFloat(spans[1].innerHTML);
+        var minTemp =parseFloat(TempData[1][index]);
+        for (var i = p; i < TempData.length; i+=p) {
+                if(minTemp>parseFloat(TempData[i][index])){
+                		minTemp=parseFloat(TempData[i][index]);
+                }
+        }
         
-        changeOpacity(opacity);
-        changeRadius(radius);
-
+        TempHeatData.forEach(function(elm, i){
+        		elm.weight=Math.pow(parseFloat(TempData[i*p+1][index])-minTemp,20);
+        });
+        
+        TempMap.set('data',TempHeatData);
+        
+        CO2HeatData.forEach(function(elm, i){
+        		elm.weight=parseFloat(CO2Data[i+1][index]);
+        });
+        
+        CO2Map.set('data',CO2HeatData);
 }
 
-function deleteMap() {
-        heatmap.setMap(null);
-        document.getElementById("demo").innerHTML="delete";
+function removeMap(mn) {
+		if(mn==1)
+        		PrecipMap.setMap(null);
+        if(mn==2)
+        		TempMap.setMap(null);
+        if(mn==3)
+        		CO2Map.setMap(null);
+        //document.getElementById("demo").innerHTML="delete";
 }
 
-function reinitializeMap() {
-        heatmap.setMap(map);
-        document.getElementById("demo").innerHTML="initialize";
+function reinitializeMap(mn) {
+        if(mn==1){
+        		PrecipMap.setMap(map);
+                
+                setOpacity(0.33,1);
+        		setRadius(1.4,1);
+        }
+        if(mn==2){
+        		TempMap.setMap(map);
+                
+                setOpacity(0.33,2);
+        		setRadius(1.4,2);
+        }
+        if(mn==3){
+        		CO2Map.setMap(map);
+                
+                setOpacity(0.33,3);
+        		setRadius(5,3);
+        }
+        //document.getElementById("demo").innerHTML="initialize";
 }
 
-function changeGradient() {
-        heatmap.set('gradient', heatmap.get('gradient') ? null : gradient2);
+function setGradient(gradient,mn) {
+        if(mn==1)
+        		PrecipMap.set('gradient',gradient);
+        if(mn==2)
+        		TempMap.set('gradient',gradient);
+        if(mn==3)
+        		CO2Map.set('gradient',gradient);
 }
 
-function changeRadius(a) {
-        heatmap.set('radius', a);
-        document.getElementById("radius").innerHTML=a;
+function setRadius(r,mn) {
+		 if(mn==1){
+        		PrecipMap.set('radius', r);
+                
+                var slider = document.getElementById("PrecipRadiusSlider");
+                slider.value = r;
+                var field = document.getElementById("PrecipRadiusField");
+                field.value = r;
+        }
+        if(mn==2){
+        		TempMap.set('radius', r);
+                
+                var slider = document.getElementById("TempRadiusSlider");
+                slider.value = r;
+                var field = document.getElementById("TempRadiusField");
+                field.value = r;
+        }
+        if(mn==3){
+        		CO2Map.set('radius', r);
+                
+                var slider = document.getElementById("CO2RadiusSlider");
+                slider.value = r;
+                var field = document.getElementById("CO2RadiusField");
+                field.value = r;
+        }
 }
 
-function changeOpacity(a) {
-        heatmap.set('opacity', a);
-        document.getElementById("opacity").innerHTML=a;
+function setOpacity(r,mn) {
+        if(mn==1){
+        		PrecipMap.set('opacity', r);
+                
+                var slider = document.getElementById("PrecipOpacitySlider");
+                slider.value = r;
+                var field = document.getElementById("PrecipOpacityField");
+                field.value = r;
+        }
+        if(mn==2){
+        		TempMap.set('opacity', r);
+                
+                var slider = document.getElementById("TempOpacitySlider");
+                slider.value = r;
+                var field = document.getElementById("TempOpacityField");
+                field.value = r;
+        }
+        if(mn==3){
+        		CO2Map.set('opacity', r);
+                
+                var slider = document.getElementById("CO2OpacitySlider");
+                slider.value = r;
+                var field = document.getElementById("CO2OpacityField");
+                field.value = r;
+    	}
 }
 
 function TimeUpdate(newValue){
-        document.getElementById("range").innerHTML=newValue;
         drawHeat(newValue);
+        
+        var input = document.getElementById("slider");
+        var number = document.getElementById("timefield");
+		input.value = newValue;
+        number.value = newValue;
+        
 }
 
 function forwardYear(){
-        var div = document.getElementById("panel");
-        var spans = div.getElementsByTagName("span");
+        var number = document.getElementById("timefield");
 
-        var newValue = parseInt(spans[0].innerHTML)+1;
+        var newValue = parseInt(number.value)+1;
 
         if(newValue<=maxYear){
-                document.getElementById("range").innerHTML=newValue;
-                drawHeat(newValue);
+                TimeUpdate(newValue);
         }
-        
-        var input = document.getElementById("slider");
-		input.value = newValue;
-}
-
-function backwardYear(){
-        var div = document.getElementById("panel");
-        var spans = div.getElementsByTagName("span");
-
-        var newValue = parseInt(spans[0].innerHTML)-1;
-
-        if(newValue>=minYear){
-                document.getElementById("range").innerHTML=newValue;
-                drawHeat(newValue);
-        }
-        
-        var input = document.getElementById("slider");
-		input.value = newValue;
 }
 
 function start() {
-		var div = document.getElementById("panel");
-        var spans = div.getElementsByTagName("span");
+        var number = document.getElementById("timefield");
+
+        var timeValue = parseInt(number.value);
         
-        var spansValue = parseInt(spans[0].innerHTML);
+        if(timeValue == maxYear){
+        		TimeUpdate(2000);
+                setTimeout(start, animationSpeed);
+        }
         
-        if(spansValue == maxYear)
-        		setPlay(false);
-        
-		if(play){
+		if(play&&timeValue != maxYear){
         		forwardYear();
-				setTimeout(start, 500);
+				setTimeout(start, animationSpeed);
         }
 }
 
@@ -241,35 +394,76 @@ function setPlay(bool){
 		play = bool;
 }
 
+function setAnimationSpeed(speed){
+		animationSpeed = speed;
+        var input = document.getElementById("speedfield");
+		input.value = speed;
+}
+
 
 
 </script>
 </head>
 
 <body onload="initialize()">
+    
+        <form>
+        		Resolution in lat/long degrees:
+                <input type="radio" name="res0.5" value="0.5"> 0.5
+                <input type="radio" name="res1.0" value="1.0">1.0
+                <input type="radio" name="res2.0" value="2.0">2.0
+        </form></br>
+    
         <div id="panel">
-                <button onclick="changeGradient()">Change gradient</button>
-                <button onclick="deleteMap()">Delete Heatmap</button>
-                <button onclick="reinitializeMap()">Draw Heatmap</button>
+        		<b>Draw heat map:</b>
+                <button onclick="reinitializeMap(1)">Precipitation</button>
+                <button onclick="reinitializeMap(2)">Temperature</button>
+                <button onclick="reinitializeMap(3)">CO2 emission</button>
+        		&nbsp | &nbsp <b>Remove:</b>
+                <button onclick="removeMap(1)">Precipitation</button>
+                <button onclick="removeMap(2)">Temperature</button>
+                <button onclick="removeMap(3)">CO2 emission</button>
+        </div></br>
+        
+        <div id="timepanel">
+                <b>Time setups:</b>
+                &nbsp Year
+                <input id="timefield" type="number"  min="2000" max="2005" value="2000" step="1" onchange="TimeUpdate(this.value)" />
                 <input id = "slider" type="range" min="2000" max="2005" value="2000" step="1" onchange="TimeUpdate(this.value)" />
-                <span id="range">2000</span>
-                <button onclick="backwardYear()">&#8592</button>
-                <button onclick="forwardYear()">&#8594</button>
                 <button onclick="setPlay(true), start()">&#9658</button>
                 <button onclick="stop()">&#8214</button>
-        </div>
+                &nbsp | &nbsp Animation speed
+                <input id="speedfield" type="number"  min="100" max="10000" step="100" onchange="setAnimationSpeed(this.value)" />
+                ms
+        </div> </br>
 
         <div id="parameters">
-                Change Opacity:
-                <input type="range" min="0.01" max="1" value="0.8" step="0.01" onchange="changeOpacity(this.value)" />
-                <span id="opacity">0.8</span>
-                <br>
-                Change Radius:
-                <input type="range" min="0.1" max="5" value="3" step="0.1" onchange="changeRadius(this.value)" />
-                <span id="radius">3</span>
+                <b>Change opacity:</b> </br>
+                Precipitation
+                <input id = "PrecipOpacitySlider" type="range" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,1)" />
+                <input id="PrecipOpacityField" type="number" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,1)" />
+                &nbsp | &nbsp Temperature
+                <input id = "TempOpacitySlider" type="range" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,2)" />
+                <input id="TempOpacityField" type="number" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,2)" />
+                &nbsp | &nbsp CO2
+                <input id = "CO2OpacitySlider" type="range" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,3)" />
+                <input id="CO2OpacityField" type="number" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,3)" />
+
+                </br>
+                <b>Change density radius:</b> </br>
+                Precipitation
+                <input id = "PrecipRadiusSlider" type="range" min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,1)" />
+                <input id="PrecipRadiusField" type="number"  min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,1)" />
+                &nbsp | &nbsp Temperature
+                <input id = "TempRadiusSlider" type="range" min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,2)" />
+                <input id="TempRadiusField" type="number"  min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,2)" />
+                &nbsp | &nbsp CO2
+                <input id = "CO2RadiusSlider" type="range" min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,3)" />
+                <input id="CO2RadiusField" type="number"  min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,3)" />
+
         </div>
 
-        <div id="map_canvas"></div>
+        <div style="width:1000px" id="map_canvas"></div>
         
         <div id="Text">
                 The coordinates will show up here
