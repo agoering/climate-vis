@@ -1,0 +1,11 @@
+Total precipitation ranges:
+Minimum        0.0
+Maximum    19451.8
+
+Annual temp ranges:
+Minimum   -62.925000
+Maximum    36.516667
+
+Total CO2 ranges:
+Minimum    -0.000000
+Maximum    74.095327
