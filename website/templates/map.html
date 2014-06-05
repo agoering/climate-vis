@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% set title = "Map" %}
+
+{% block head %}
+<style> #map_canvas { margin: 0%; padding: 20%; height: 100%;}</style>
+
+<script src="http://maps.googleapis.com/maps/api/js?libraries=geometry,visualization,drawing&sensor=true_or_false"></script>
+
+<script src="static/Map_Data.js"></script>
+
+<script src="static/js/heatmap.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+<div class="col-xs-5">
+<div class="btn-group" id="panel">
+	<button type="button" class="btn btn-default" onclick="changeGradient()">
+		Change gradient
+	</button>
+	<button type="button" class="btn btn-default" onclick="deleteMap()">
+		Delete Heatmap
+	</button>
+	<button type="button" class="btn btn-default" onclick="reinitializeMap()">
+		Draw Heatmap
+	</button>
+</div>
+<br>
+<input id = "slider" type="range" min="2000" max="2005" value="2000" step="1" onchange="TimeUpdate(this.value)" />
+<br>
+<div class="btn-group">
+	<button id="year" type="button" class="btn btn-default" disabled="disabled">
+		2000
+	</button>
+	<button type="button" class="btn btn-default" onclick="backwardYear()">
+		<span class="glyphicon glyphicon-step-backward"></span>
+	</button>
+	<button type="button" class="btn btn-default" onclick="forwardYear()">
+		<span class="glyphicon glyphicon-step-forward"></span>
+	</button>
+	<button type="button" class="btn btn-default" onclick="setPlay(true), start()">
+		<span class="glyphicon glyphicon-play"></span>
+	</button>
+	<button type="button" class="btn btn-default" onclick="stop()">
+		<span class="glyphicon glyphicon-pause"></span>
+	</button>
+</div>
+
+<div id="parameters">
+	<br>
+	Opacity: <span id="opacity">0.8</span>
+	<input type="range" min="0.01" max="1" value="0.8" step="0.01" onchange="changeOpacity(this.value)" />
+	Radius:	<span id="radius">3</span>
+	<input type="range" min="0.1" max="5" value="3" step="0.1" onchange="changeRadius(this.value)" />
+</div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-xs-12">
+<div id="map_canvas"></div>
+
+<div id="Text">
+	The coordinates will show up here
+</div>
+</div>
+</div>
+
+{% endblock %}
