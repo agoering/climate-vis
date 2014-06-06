@@ -21,21 +21,16 @@ def delBlckSpace(list):
     return list
 
 #Filename
-filename = "../data/CO2Avg/CO2_2000_to_2005.csv"
+filename = "../data/appData/CO2_1900_to_2010res_1.csv"
 
 #read file
 file = readFile(filename)
 
-#add Null content
-zero = [0] * len(file[0])
+#write Javascript format
+content = "/*Data structure: each element is (counter, longitude, latitude, magnitude (year1), magnitude (year2), ....)*/ \n var CO2Data= ["
 
-file.append(zero)
-
-
-content = "/*Data structure: each element is (latitude, longitude, magnitude (year1), magnitude (year2), ....)*/ \n var CO2Data= ["
-
-for elm in file:
-	content += " "+str(elm)+",\n "
+for i in xrange(1,len(file),1):
+	content += " "+str(file[i])+",\n "
 
 content+="];"
 print content
