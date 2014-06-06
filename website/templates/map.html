@@ -8,9 +8,9 @@
 <script src="http://maps.googleapis.com/maps/api/js?libraries=geometry,visualization,drawing&sensor=true_or_false"></script>
 
 <script src="static/data/Map_Data.js"></script>
-<script src="static/data/TempData2000_2005.js"></script>
-<script src="static/data/CO2Data2000_2005.js"></script>
-<script src="static/data/PrecipData2000_2005.js"></script>
+<script src="static/data/TempData.js"></script>
+<script src="static/data/CO2Data.js"></script>
+<script src="static/data/PrecipData.js"></script>
 
 
 <script src="static/js/heatmap.js"></script>
@@ -32,13 +32,15 @@
         <div id="timepanel">
                 <b>Time setups:</b>
                 &nbsp Year
-                <input id="timefield" type="number"  min="2000" max="2005" value="2000" step="1" onchange="TimeUpdate(this.value)" />
-                <input id = "slider" type="range" min="2000" max="2005" value="2000" step="1" onchange="TimeUpdate(this.value)" />
+                <input id="timefield" type="number"  min="1900" max="2010" value="2000" step="1" onchange="TimeUpdate(this.value)" />
+                <input id = "slider" type="range" min="1900" max="2010" value="2000" step="1" onchange="TimeUpdate(this.value)" />
                 <button onclick="setPlay(true), start()">&#9658</button>
                 <button onclick="stop()">&#8214</button>
                 &nbsp | &nbsp Animation speed
                 <input id="speedfield" type="number"  min="100" max="10000" step="100" onchange="setAnimationSpeed(this.value)" />
                 ms
+                &nbsp | &nbsp Years steps
+                <input id="stepfield" type="number"  min="1" max="21" step="1" onchange="setStep(this.value)" />
         </div> </br>
 
         <div id="parameters">
@@ -70,7 +72,9 @@
         <div style="width:1000px" id="map_canvas"></div>
         
         <div id="Text">
-                The coordinates are going to show up here
+                <textarea id="RectangleTextArea" cols="130" rows="10">
+                        The rectangle information will show up here
+                </textarea>
         </div>
 
 {% endblock %}

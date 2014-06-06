@@ -1,10 +1,10 @@
-var map, drawingManager, animationSpeed;
+var map, drawingManager, animationSpeed, step;
 var PrecipMap, PrecipHeatData;
 var TempMap, TempHeatData;
 var CO2Map, CO2HeatData;
 
-var maxYear = 2005;
-var minYear = 2000;
+var maxYear = 2010;
+var minYear = 1900;
 
 var minPrecip = 0.0;
 var maxPrecip = 19452.0;
@@ -15,30 +15,17 @@ var maxTemp = 36.5;
 var minCO2 = 0.0;
 var maxCO2 = 74.1;
 
-var p = 1;
-
 var play = false;
 
-//data = getData();
-
-var gradient1 = [
-        'rgba(0, 255, 255, 0)',
-        'rgb(0, 255, 255)',
-        'rgb(0, 191, 255)',
-        'rgb(0, 127, 255)',
-        'rgb(0, 63, 255)',
-        'rgb(0, 0, 255)',
-        'rgb(0, 0, 223)',
-        'rgb(0, 0, 191)',
-        'rgb(0, 0, 159)',
-        'rgb(0, 0, 127)',
-        'rgb(63, 0, 91)',
-        'rgb(127, 0, 63)',
-        'rgb(191, 0, 31)',
-        'rgb(255, 0, 0)'
+var gradient1 = ['rgba(0, 227, 229, 0)',
+'rgb(0, 227, 229)','rgb(0, 192, 227)','rgb(0, 63, 255)','rgb(0, 125, 223)','rgb(0, 93, 221)',
+'rgb(0, 61, 219)','rgb(0, 29, 218)','rgb(1, 0, 216)','rgb(32, 0, 214)','rgb(62, 0, 212)',
+'rgb(91, 0, 210)','rgb(120, 0, 209)','rgb(149, 0, 207)','rgb(177, 0, 205)','rgb(203, 0, 202)',
+'rgb(201, 0, 171)','rgb(200, 0, 141)','rgb(198, 0, 112)','rgb(196, 0, 83)','rgb(194, 0, 54)',
+'rgb(192, 0, 26)','rgb(191, 0, 0)'
 ];
 
-var gradient2 = [
+var gradient2 = ['rgba(0, 222, 229, 0)',
 'rgba(0, 222, 229, 1)','rgba(0, 228, 220, 1)','rgba(0, 227, 205, 1)','rgba(0, 226, 190, 1)','rgba(0, 225, 176, 1)',
 'rgba(0, 225, 162, 1)','rgba(0, 224, 147, 1)','rgba(0, 223, 133, 1)','rgba(0, 222, 119, 1)','rgba(0, 222, 105, 1)',
 'rgba(0, 221, 91, 1)','rgba(0, 220, 77, 1)','rgba(0, 219, 64, 1)','rgba(0, 218, 50, 1)','rgba(0, 218, 36, 1)',
@@ -52,25 +39,19 @@ var gradient2 = [
 ];
 
 
-var gradient3 = [
-        'rgba(140, 255, 102, 0)',
-        'rgb(140, 255, 102)',
-        'rgb(134, 238, 100)',
-        'rgb(129, 221, 99)',
-        'rgb(124, 205, 98)',
-        'rgb(119, 188, 96)',
-        'rgb(114, 172, 95)',
-        'rgb(109, 155, 94)',
-        'rgb(104, 138, 92)',
-        'rgb(99, 122, 91)',
-        'rgb(94, 105, 90)',
-        'rgb(89, 89, 89)',
+var gradient3 = ['rgba(107, 255, 150, 0)',
+'rgba(107, 255, 150,1)', 'rgb(107, 242, 148)', 'rgb(107, 229, 147)', 'rgb(107, 216, 146)', 'rgb(107, 204, 145)',
+'rgb(107, 191, 144)', 'rgb(107, 178, 143)','rgb(107, 165, 142)', 'rgb(107, 153, 141)','rgb(107, 140, 140)',
+'rgb(107, 127, 139)','rgb(107, 114, 137)','rgb(107, 102, 136)','rgb(107, 89, 135)','rgb(107, 76, 134)',
+'rgb(107, 63, 133)','rgb(107, 51, 132)','rgb(107, 38, 131)','rgb(107, 25, 130)','rgb(107, 12, 129)','rgb(108, 0, 128)'
 ];
 
 
 function initialize() {
 
-		setAnimationSpeed(1200);
+		setAnimationSpeed(700);
+        setStep(5);
+
 
         PrecipHeatData = new google.maps.MVCArray();
         TempHeatData = new google.maps.MVCArray();
@@ -86,6 +67,8 @@ function initialize() {
         map = new google.maps.Map(document.getElementById('map_canvas'),
         mapOptions);
 
+
+    //DRAWING MANAGER------------------------------------------------
         
         drawingManager = new google.maps.drawing.DrawingManager({
                 drawingControl: true,
@@ -111,7 +94,16 @@ function initialize() {
                     var NE = bounds.getNorthEast();
 					var SW = bounds.getSouthWest();
                     
-                    document.getElementById("Text").innerHTML=[NE,SW];
+                    var PrecipAvr = Average(NE,SW,PrecipData);
+                    var TempAvr = Average(NE,SW,TempData);
+                    var CO2Avr = Average(NE,SW,CO2Data);
+					
+                    var string ="Rectangle Bounds (North East, South West): "+NE+","+SW+"\n";
+                    string+="Precipitation Averages: "+PrecipAvr+"\n";
+                    string+="Temperature Averages: "+TempAvr+"\n";
+                    string+="CO2 Averages: "+CO2Avr+"\n";
+                    
+                    document.getElementById("RectangleTextArea").innerHTML=string;
             };
             
             drawingManager.setDrawingMode(null);
@@ -122,9 +114,57 @@ function initialize() {
             
 		});
         
-        for (var i = 1; i < PrecipData.length; i+=p) {
+        google.maps.event.addListener(map, "rightclick", function (e) {
+                var latLng = e.latLng;
+                 
+                var infowindow = new google.maps.InfoWindow();
+                            
+                infowindow.setPosition(latLng);
+                
+                var content = "";
+                
+                content+="Lat/Lng: ".bold()+(Math.round(latLng.lat()*100)/100)+", "+(Math.round(latLng.lng()*100)/100)+"<br>";
+								
+                var y = document.getElementById("timefield");
+                var year = parseInt(y.value);
+                
+                var PrecipMgn = getMagnitude(PrecipData,latLng,year);
+                var TempMgn = getMagnitude(TempData,latLng,year);
+                var CO2Mgn = getMagnitude(CO2Data,latLng,year);
+                
+                if(typeof PrecipMgn == "undefined")
+                		PrecipMgn = "";
+                else
+                		PrecipMgn = (Math.round(PrecipMgn*10)/10);
+                if(typeof TempMgn == "undefined")
+                		TempMgn = "";
+                else
+                		TempMgn = (Math.round(TempMgn*10)/10);
+                if(typeof CO2Mgn == "undefined")
+                		CO2Mgn = "";
+                else
+                		CO2Mgn = (Math.round(CO2Mgn*10000)/10000);
+                
+                content+="Precip: ".bold()+PrecipMgn+"<br>";
+                content+="Temp: ".bold()+TempMgn+"<br>";
+                content+="CO2: ".bold()+CO2Mgn;
+                
+                infowindow.setContent(content);
+                
+    			infowindow.open(map);
+                             
+                //document.getElementById("demo").innerHTML=latLng;
+
+			});
+        
+        
+	//DATA TO MAP---------------------------------------------
+    
+        var index = 2000-minYear+3;
+        
+        for (var i = 0; i < PrecipData.length; i+=1) {
                 var latLng = new google.maps.LatLng(parseFloat(PrecipData[i][2]), parseFloat(PrecipData[i][1]));
-                var magnitude = parseFloat(PrecipData[i][3]);
+                var magnitude = parseFloat(PrecipData[i][index]);
                 var weightedLoc = {
                         location: latLng,
                         weight:magnitude
@@ -132,16 +172,18 @@ function initialize() {
                 PrecipHeatData.push(weightedLoc);
         };
         
-        var minTemp =parseFloat(TempData[1][3]);
-        for (var i = p; i < TempData.length; i+=p) {
-                if(minTemp>parseFloat(TempData[i][3])){
-                		minTemp=parseFloat(TempData[i][3]);
-                }
-        }
+        /*PrecipHeatData.push({
+                        location: new google.maps.LatLng(-65, -168),
+                        weight:maxPrecip
+                });
+        PrecipHeatData.push({
+                        location: new google.maps.LatLng(-65, -167),
+                        weight:minPrecip
+                });*/
         
-        for (var i = 1; i < TempData.length; i+=p) {
+        for (var i = 0; i < TempData.length; i+=1) {
                 var latLng = new google.maps.LatLng(parseFloat(TempData[i][2]), parseFloat(TempData[i][1]));
-                var magnitude = parseFloat(TempData[i][3])-minTemp;
+                var magnitude = parseFloat(TempData[i][index])-minTemp;
                 var weightedLoc = {
                         location: latLng,
                         weight:Math.pow(magnitude,20)
@@ -149,42 +191,27 @@ function initialize() {
                 TempHeatData.push(weightedLoc);
         };
         
-        var maxTemp =TempHeatData.getAt(0).weight;
-        for (var i = 1; i < TempHeatData.getLength(); i+=1) {
-                if(maxTemp<TempHeatData.getAt(i).weight){
-                		maxTemp=TempHeatData.getAt(i).weight;
-                }
-        }
-        //document.getElementById("demo").innerHTML=TempHeatData.getAt(0).weight;
         
-        for (var i = 1; i < CO2Data.length; i+=1) {
+        for (var i = 0; i < CO2Data.length; i+=1) {
                 var latLng = new google.maps.LatLng(parseFloat(CO2Data[i][2]), parseFloat(CO2Data[i][1]));
-                var magnitude = parseFloat(CO2Data[i][3]);
+                var magnitude = parseFloat(CO2Data[i][index]);
                 var weightedLoc = {
                         location: latLng,
                         weight:magnitude
                 };
                 CO2HeatData.push(weightedLoc);
         };
-
-		var pre =PrecipHeatData.getAt(0).weight;
-
-        for (var i = 1; i < PrecipHeatData.getLength(); i+=1) {
-                if(pre>PrecipHeatData.getAt(i).weight){
-                		pre=PrecipHeatData.getAt(i).weight;
-                }
-        }
         
-        //document.getElementById("demo").innerHTML=pre;
-        
-        //document.getElementById("demo").innerHTML=[opacity,radius];
+		
+        //document.getElementById("demo").innerHTML=[min,max];
 
-        
+
+	//INITIALIZE MAP----------------------------
+
         PrecipMap = new google.maps.visualization.HeatmapLayer({
                 data: PrecipHeatData,
                 dissipating: false,
                 map: map,
-                gradient: gradient1
         });
         
         TempMap = new google.maps.visualization.HeatmapLayer({
@@ -199,7 +226,7 @@ function initialize() {
                 map: map,
         });
         
-        
+        setGradient(gradient1,1);
         setGradient(gradient2,2);
         setGradient(gradient3,3);
         
@@ -208,43 +235,67 @@ function initialize() {
         setOpacity(0.33,2);
         setRadius(1.4,2);
         setOpacity(0.33,3);
-        setRadius(10,3);
+        setRadius(5,3);
         
         removeMap(1);
         removeMap(2);
         removeMap(3);
-        
 }
 
 function drawHeat(year){
-        
+		
         var index = year-minYear+3;
-
+                
 
         PrecipHeatData.forEach(function(elm, i){
-        		elm.weight=PrecipData[i*p+1][index];
+        		elm.weight=parseFloat(PrecipData[i][index]);
         });
         
         PrecipMap.set('data',PrecipHeatData);
-        
-        var minTemp =parseFloat(TempData[1][index]);
-        for (var i = p; i < TempData.length; i+=p) {
-                if(minTemp>parseFloat(TempData[i][index])){
-                		minTemp=parseFloat(TempData[i][index]);
-                }
-        }
+
         
         TempHeatData.forEach(function(elm, i){
-        		elm.weight=Math.pow(parseFloat(TempData[i*p+1][index])-minTemp,20);
+        		elm.weight=Math.pow(parseFloat(TempData[i][index])-minTemp,20);
         });
         
         TempMap.set('data',TempHeatData);
         
+        
         CO2HeatData.forEach(function(elm, i){
-        		elm.weight=parseFloat(CO2Data[i+1][index]);
+        		elm.weight=parseFloat(CO2Data[i][index]);
         });
         
         CO2Map.set('data',CO2HeatData);
+}
+
+function TimeUpdate(newValue){
+        drawHeat(newValue);
+        
+        var input = document.getElementById("slider");
+        var number = document.getElementById("timefield");
+		input.value = newValue;
+        number.value = newValue;
+}
+
+function start() {
+        var number = document.getElementById("timefield");
+
+        var timeValue = parseInt(number.value)+parseInt(step);
+        
+        if(timeValue > maxYear){
+        		TimeUpdate(minYear);
+                setTimeout(start, animationSpeed);
+        }
+        
+		if(play&&timeValue <= maxYear){
+                TimeUpdate(timeValue);
+				setTimeout(start, animationSpeed);
+        }
+}
+
+function stop() {
+		setPlay(false);
+        start(play);
 }
 
 function removeMap(mn) {
@@ -277,6 +328,22 @@ function reinitializeMap(mn) {
         		setRadius(5,3);
         }
         //document.getElementById("demo").innerHTML="initialize";
+}
+
+function setPlay(bool){
+		play = bool;
+}
+
+function setAnimationSpeed(speed){
+		animationSpeed = speed;
+        var input = document.getElementById("speedfield");
+		input.value = speed;
+}
+
+function setStep(s){
+		step = s;
+        var input = document.getElementById("stepfield");
+		input.value = s;
 }
 
 function setGradient(gradient,mn) {
@@ -342,55 +409,35 @@ function setOpacity(r,mn) {
     	}
 }
 
-function TimeUpdate(newValue){
-        drawHeat(newValue);
-        
-        var input = document.getElementById("slider");
-        var number = document.getElementById("timefield");
-		input.value = newValue;
-        number.value = newValue;
-        
-}
-
-function forwardYear(){
-        var number = document.getElementById("timefield");
-
-        var newValue = parseInt(number.value)+1;
-
-        if(newValue<=maxYear){
-                TimeUpdate(newValue);
-        }
-}
-
-function start() {
-        var number = document.getElementById("timefield");
-
-        var timeValue = parseInt(number.value);
-        
-        if(timeValue == maxYear){
-        		TimeUpdate(2000);
-                setTimeout(start, animationSpeed);
+function Average(ne,sw, data){
+        var index = [];
+        var average = [];
+        for(var i = 0; i<data.length;i++){
+        		var dlng = parseFloat(data[i][1]);
+                var dlat = parseFloat(data[i][2]);
+                if(dlng >= Math.round(sw.lng()) && dlng <= Math.round(ne.lng()) && dlat >= Math.round(sw.lat()) && dlat <= Math.round(ne.lat()))
+                        index.push(i);
         }
         
-		if(play&&timeValue != maxYear){
-        		forwardYear();
-				setTimeout(start, animationSpeed);
+        for(var i =3; i<data[1].length; i++){
+        		var avr = 0;
+                var n = parseFloat(index.length);
+                for(var j = 0; j<n; j++)
+                		avr+=parseFloat(data[index[j]][i]);
+                avr/=n;
+                average.push(avr);
         }
+        return average;
 }
 
-function stop() {
-		setPlay(false);
-        start(play);
+function getMagnitude(data,latlng,year){
+		var mgn;
+        var index = year-minYear+3;
+        for(var i = 0; i<data.length; i++){
+        		var dlng = parseFloat(data[i][1]);
+                var dlat = parseFloat(data[i][2]);
+        		if(dlng==Math.round(latlng.lng()) && dlat==Math.round(latlng.lat()))
+                		mgn = parseFloat(data[i][index]);
+        }
+		return mgn;
 }
-
-function setPlay(bool){
-		play = bool;
-}
-
-function setAnimationSpeed(speed){
-		animationSpeed = speed;
-        var input = document.getElementById("speedfield");
-		input.value = speed;
-}
-
-
