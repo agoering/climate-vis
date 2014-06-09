@@ -4,6 +4,7 @@
 <style>
 html, body, #map_canvas { margin: 0%; padding: 1%; height: 85%; },
 </style>
+<script src='https://www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart","table"]}]}'></script>
 <script src="http://maps.googleapis.com/maps/api/js?libraries=geometry,visualization,drawing&sensor=true_or_false"></script>
 
 <script src=../data/Map_Data.js></script>
@@ -11,17 +12,13 @@ html, body, #map_canvas { margin: 0%; padding: 1%; height: 85%; },
 <script src=../website/static/data/CO2Data.js></script>
 <script src=../website/static/data/PrecipData.js></script>
 
-<!--
-<script src=../data/air_tempAvg/TempData.js></script>
-<script src=../data/CO2Avg/CO2Data.js></script>
-<script src=../data/precipAvg/PrecipData.js></script>
--->
-
-
 
 <p id="demo"></p>
 <script>
+//document.getElementById("demo").innerHTML="initialize";
 
+
+//Initialize global variables
 var map, drawingManager, animationSpeed, step;
 var PrecipMap, PrecipHeatData;
 var TempMap, TempHeatData;
@@ -38,6 +35,19 @@ var maxTemp = 36.5;
 
 var minCO2 = 0.0;
 var maxCO2 = 74.1;
+
+var infowindow = new google.maps.InfoWindow();
+var position = 0;
+
+//Initialize rectangle array (in order to delete element after new rectangle is selected)
+var rectangles = new google.maps.MVCArray();
+rectangles.push(new google.maps.Rectangle({
+		bounds: new google.maps.LatLngBounds(
+        		new google.maps.LatLng(0, 0),
+      			new google.maps.LatLng(0, 0)
+        )
+    })
+);
 
 var play = false;
 
@@ -70,30 +80,32 @@ var gradient3 = ['rgba(107, 255, 150, 0)',
 'rgb(107, 63, 133)','rgb(107, 51, 132)','rgb(107, 38, 131)','rgb(107, 25, 130)','rgb(107, 12, 129)','rgb(108, 0, 128)'
 ];
 
-
+//INITIALIZE VISUALIZATION-----------------------------------------
 function initialize() {
-
-		setAnimationSpeed(700);
+    
+        //Set Animation speed & years steps
+		setAnimationSpeed(1500);
         setStep(5);
 
-
+		//Initialize Heatmap Data array
         PrecipHeatData = new google.maps.MVCArray();
         TempHeatData = new google.maps.MVCArray();
         CO2HeatData = new google.maps.MVCArray();
 
-
+		//Map Options
         var mapOptions = {
                 zoom: 2,
                 center: new google.maps.LatLng(5,45),
                 mapTypeId: google.maps.MapTypeId.TERRAIN
         };
+		
+        //Set map into canvas
+        map = new google.maps.Map(document.getElementById('map_canvas'),mapOptions);
 
-        map = new google.maps.Map(document.getElementById('map_canvas'),
-        mapOptions);
 
+//DRAWING MANAGER------------------------------------------------------
 
-    //DRAWING MANAGER------------------------------------------------
-        
+        //Initialize drawing manager
         drawingManager = new google.maps.drawing.DrawingManager({
                 drawingControl: true,
                 drawingControlOptions: {
@@ -103,122 +115,111 @@ function initialize() {
                         ]
                 },
         });
-
+		
+        //Set drawing manager into the map
         drawingManager.setMap(map);
+        
+        //Set rectangle options
         drawingManager.setOptions({
   				  rectangleOptions: {
     						fillColor: '#ffff00',
                             strokeWeight: 1,
+                            editable: true,
+                            draggable: true
                 }
   		});
         
+        //Listen to drawing completed
         google.maps.event.addListener(drawingManager, 'overlaycomplete', function(event) {
-  			if (event.type == google.maps.drawing.OverlayType.RECTANGLE) {
-                    var bounds = event.overlay.getBounds();
-                    var NE = bounds.getNorthEast();
-					var SW = bounds.getSouthWest();
-                    
-                    var PrecipAvr = Average(NE,SW,PrecipData);
-                    var TempAvr = Average(NE,SW,TempData);
-                    var CO2Avr = Average(NE,SW,CO2Data);
-					
-                    var string ="Rectangle Bounds (North East, South West): "+NE+","+SW+"\n";
-                    string+="Precipitation Averages: "+PrecipAvr+"\n";
-                    string+="Temperature Averages: "+TempAvr+"\n";
-                    string+="CO2 Averages: "+CO2Avr+"\n";
-                    
-                    document.getElementById("RectangleTextArea").innerHTML=string;
-            };
             
+            //Delete previous rectangle
+            rectangles.getAt(0).setMap(null);
+            rectangles.clear();
+            
+            //Get drawn rectangle into a variable
+            var rectangle = event.overlay;
+            rectangle.type = event.type;
+			
+            //Plot and display rectangle info
+            rectangleInfo(rectangle);
+            
+            //push rectangle to array
+            rectangles.push(rectangle);
+			
+            //change rectangle bounds, info and chart when bounds of rectangle where changed
+            google.maps.event.addListener(rectangle, 'bounds_changed', function(){
+            		rectangleInfo(rectangle);
+            });
+			
+            //After drawing rectangle, go back to null modus
             drawingManager.setDrawingMode(null);
-            
-            var newShape = event.overlay;
-            newShape.type = event.type;
-            newShape.setMap(null);
-            
 		});
         
+        //For right click on a place in the map, show information of that place
         google.maps.event.addListener(map, "rightclick", function (e) {
-                var latLng = e.latLng;
-                 
-                var infowindow = new google.maps.InfoWindow();
-                            
-                infowindow.setPosition(latLng);
-                
-                var content = "";
-                
-                content+="Lat/Lng: ".bold()+(Math.round(latLng.lat()*100)/100)+", "+(Math.round(latLng.lng()*100)/100)+"<br>";
-								
-                var y = document.getElementById("timefield");
-                var year = parseInt(y.value);
-                
-                var PrecipMgn = getMagnitude(PrecipData,latLng,year);
-                var TempMgn = getMagnitude(TempData,latLng,year);
-                var CO2Mgn = getMagnitude(CO2Data,latLng,year);
-                
-                if(typeof PrecipMgn == "undefined")
-                		PrecipMgn = "";
-                else
-                		PrecipMgn = (Math.round(PrecipMgn*10)/10);
-                if(typeof TempMgn == "undefined")
-                		TempMgn = "";
-                else
-                		TempMgn = (Math.round(TempMgn*10)/10);
-                if(typeof CO2Mgn == "undefined")
-                		CO2Mgn = "";
-                else
-                		CO2Mgn = (Math.round(CO2Mgn*10000)/10000);
-                
-                content+="Precip: ".bold()+PrecipMgn+"<br>";
-                content+="Temp: ".bold()+TempMgn+"<br>";
-                content+="CO2: ".bold()+CO2Mgn;
-                
-                infowindow.setContent(content);
-                
-    			infowindow.open(map);
-                             
-                document.getElementById("demo").innerHTML=latLng;
+        		//Dsiplay datainformation at infowindow
+        		infowindowInfo(e);
+        });
+        
+        
+//DATA TO MAP------------------------------------------------------------------
 
-			});
+        //get the index to find data at selected year
+        var index = 2010-minYear+3;
         
-        
-	//DATA TO MAP---------------------------------------------
-    
-        var index = 2000-minYear+3;
-        
+        //push Precipitation data to precipitation heat map array
         for (var i = 0; i < PrecipData.length; i+=1) {
                 var latLng = new google.maps.LatLng(parseFloat(PrecipData[i][2]), parseFloat(PrecipData[i][1]));
                 var magnitude = parseFloat(PrecipData[i][index]);
                 var weightedLoc = {
                         location: latLng,
-                        weight:magnitude
+                        weight:magnitude,
+                        center: new google.maps.LatLng(10, 0),
+                		zoom: 1
                 };
                 PrecipHeatData.push(weightedLoc);
         };
         
-        /*PrecipHeatData.push({
+        //Set range value
+        PrecipHeatData.push({
                         location: new google.maps.LatLng(-65, -168),
                         weight:maxPrecip
                 });
         PrecipHeatData.push({
                         location: new google.maps.LatLng(-65, -167),
                         weight:minPrecip
-                });*/
+                });
         
+        //push Temperature data to temperature heat map array
         for (var i = 0; i < TempData.length; i+=1) {
                 var latLng = new google.maps.LatLng(parseFloat(TempData[i][2]), parseFloat(TempData[i][1]));
+                //magnitudes have to be > 0
                 var magnitude = parseFloat(TempData[i][index])-minTemp;
                 var weightedLoc = {
                         location: latLng,
-                        weight:Math.pow(magnitude,20)
+                        weight:magnitude
                 };
                 TempHeatData.push(weightedLoc);
         };
         
+         TempHeatData.push({
+                        location: new google.maps.LatLng(-65, -168),
+                        weight:(maxTemp-minTemp)
+                });
+        TempHeatData.push({
+                        location: new google.maps.LatLng(-65, -167),
+                        weight:Math.pow(0.00001,2)
+                });
         
+        //push CO2 data to CO2 heat map array
         for (var i = 0; i < CO2Data.length; i+=1) {
                 var latLng = new google.maps.LatLng(parseFloat(CO2Data[i][2]), parseFloat(CO2Data[i][1]));
-                var magnitude = parseFloat(CO2Data[i][index]);
+                var magnitude;
+                //problems for value -0.0
+                if(CO2Data[i][index]=='-0.0')
+                		magnitude = 0.000001;
+                else
+                		magnitude = parseFloat(CO2Data[i][index]);
                 var weightedLoc = {
                         location: latLng,
                         weight:magnitude
@@ -226,75 +227,103 @@ function initialize() {
                 CO2HeatData.push(weightedLoc);
         };
         
-		
-        //document.getElementById("demo").innerHTML=[min,max];
+         CO2HeatData.push({
+                        location: new google.maps.LatLng(-65, -168),
+                        weight:maxCO2
+        });
+        
+        CO2HeatData.push({
+                        location: new google.maps.LatLng(-65, -167),
+                        weight:minCO2
+        });
 
 
-	//INITIALIZE MAP----------------------------
+//INITIALIZE MAP--------------------------------------
 
         PrecipMap = new google.maps.visualization.HeatmapLayer({
                 data: PrecipHeatData,
                 dissipating: false,
                 map: map,
+                maxIntensity: 10000
         });
         
         TempMap = new google.maps.visualization.HeatmapLayer({
                 data: TempHeatData,
                 dissipating: false,
                 map: map,
+                maxIntensity: 800
         });
         
         CO2Map = new google.maps.visualization.HeatmapLayer({
                 data: CO2HeatData,
                 dissipating: false,
                 map: map,
+                maxIntensity: 70
         });
         
+        //choose gradient
         setGradient(gradient1,1);
-        setGradient(gradient2,2);
+        //setGradient(gradient2,2);
         setGradient(gradient3,3);
         
-        setOpacity(0.33,1);
-        setRadius(1.4,1);
-        setOpacity(0.33,2);
-        setRadius(1.4,2);
-        setOpacity(0.33,3);
-        setRadius(5,3);
-        
+        //At first, show empty map
         removeMap(1);
         removeMap(2);
         removeMap(3);
 }
 
+
+//HEAT MAP FUNCTIONS--------------------------------------------
 function drawHeat(year){
 		
+        //update information of infowindow
+		if(position != 0){
+        		infowindowInfo(position);
+   		}
+        
         var index = year-minYear+3;
                 
-
+		//update heat map values
         PrecipHeatData.forEach(function(elm, i){
-        		elm.weight=parseFloat(PrecipData[i][index]);
+        		if(i<PrecipHeatData.length-2)
+        				elm.weight=parseFloat(PrecipData[i][index]);
         });
         
         PrecipMap.set('data',PrecipHeatData);
 
         
         TempHeatData.forEach(function(elm, i){
-        		elm.weight=Math.pow(parseFloat(TempData[i][index])-minTemp,20);
+        		if(i<TempHeatData.length-2)
+                		elm.weight=(TempData[i][index]-minTemp);
         });
         
         TempMap.set('data',TempHeatData);
         
         
         CO2HeatData.forEach(function(elm, i){
-        		elm.weight=parseFloat(CO2Data[i][index]);
+        		if(i<CO2HeatData.length-2){
+                		if(CO2Data[i][index]=='-0.0')
+                				elm.weight = 0.000001;
+                		else
+                				elm.weight=parseFloat(CO2Data[i][index]);
+                }
         });
         
         CO2Map.set('data',CO2HeatData);
+        
+       var max = TempHeatData.getAt(0).weight;
+        for(var i =1; i< TempHeatData.getLength();i++){
+        		if (max<TempHeatData.getAt(i).weight){
+                		max = TempHeatData.getAt(i).weight;
+                }
+        }
 }
 
 function TimeUpdate(newValue){
+		//Update Heat maps
         drawHeat(newValue);
         
+        //Set values of year slider and time text field
         var input = document.getElementById("slider");
         var number = document.getElementById("timefield");
 		input.value = newValue;
@@ -302,15 +331,16 @@ function TimeUpdate(newValue){
 }
 
 function start() {
+		
+        //get year value of time text field
         var number = document.getElementById("timefield");
-
         var timeValue = parseInt(number.value)+parseInt(step);
         
         if(timeValue > maxYear){
-        		TimeUpdate(minYear);
-                setTimeout(start, animationSpeed);
+        		TimeUpdate(maxYear);
         }
         
+        //animate heat map update
 		if(play&&timeValue <= maxYear){
                 TimeUpdate(timeValue);
 				setTimeout(start, animationSpeed);
@@ -318,6 +348,7 @@ function start() {
 }
 
 function stop() {
+		//stop animation
 		setPlay(false);
         start(play);
 }
@@ -329,29 +360,27 @@ function removeMap(mn) {
         		TempMap.setMap(null);
         if(mn==3)
         		CO2Map.setMap(null);
-        //document.getElementById("demo").innerHTML="delete";
 }
 
 function reinitializeMap(mn) {
         if(mn==1){
         		PrecipMap.setMap(map);
                 
-                setOpacity(0.33,1);
-        		setRadius(1.4,1);
+                setOpacity(0.5,1);
+        		setRadius(2,1);
         }
         if(mn==2){
         		TempMap.setMap(map);
                 
-                setOpacity(0.33,2);
-        		setRadius(1.4,2);
+                setOpacity(0.5,2);
+        		setRadius(2.5,2);
         }
         if(mn==3){
         		CO2Map.setMap(map);
                 
-                setOpacity(0.33,3);
-        		setRadius(5,3);
+                setOpacity(0.7,3);
+        		setRadius(3,3);
         }
-        //document.getElementById("demo").innerHTML="initialize";
 }
 
 function setPlay(bool){
@@ -433,6 +462,9 @@ function setOpacity(r,mn) {
     	}
 }
 
+
+//DRAWING FUNCTIONS-----------------------------------------------
+//get average values inside rectangle bounds
 function Average(ne,sw, data){
         var index = [];
         var average = [];
@@ -454,17 +486,122 @@ function Average(ne,sw, data){
         return average;
 }
 
+//get Magnitude at specific position and year
 function getMagnitude(data,latlng,year){
 		var mgn;
         var index = year-minYear+3;
         for(var i = 0; i<data.length; i++){
-                document.getElementById("demo").innerHTML= parseFloat(data[0][1]);
         		var dlng = parseFloat(data[i][1]);
                 var dlat = parseFloat(data[i][2]);
         		if(dlng==Math.round(latlng.lng()) && dlat==Math.round(latlng.lat()))
                 		mgn = parseFloat(data[i][index]);
         }
 		return mgn;
+}
+
+//draw google line chart for given average data
+function drawChart(p, t, c){
+		var pltArray = [];
+        var titleRow = ['Year', 'Precipitation', 'Temperature', 'CO2'];
+        pltArray.push(titleRow);
+        var year = 1900;
+        for(var i = 0; i<p.length; i++){
+        		var row = [year, p[i], t[i], c[i]];
+                pltArray.push(row);
+                year++;
+        }
+        pltArray = google.visualization.arrayToDataTable(pltArray);
+        //google.load("visualization", "1", {packages:["corechart"]});
+        var options = {
+        		title: 'Title',
+                vAxes: {0: {logScale: false, title: "Precip magnitude"},
+            			1: {logScale: false, title: "Temp magnitude",textPosition: "in"},
+                        2: {logScale: false, title: "CO2 magnitude", textPosition: "out"}
+                },
+    			series:{
+                       0:{targetAxisIndex:0},
+                       1:{targetAxisIndex:1},
+                       2:{targetAxisIndex:2}
+       			},
+                hAxis: { ticks: [1900,1910,1920,1930,1940,1950,1960,1970,1980,1990,2000,2010] },
+                'width':900,
+                'height':300
+        };
+        var chart = new google.visualization.LineChart(document.getElementById('lineChart_div'));
+        chart.draw(pltArray, options);
+}
+
+//write content of rectangle information
+
+//Plot and write rectangle info
+function rectangleInfo(rectangle){
+			//Get rectangle bounds
+            var NE = rectangle.getBounds().getNorthEast();
+            var SW = rectangle.getBounds().getSouthWest();
+            
+            //Get average data inside rectangle
+            var PrecipAvr = Average(NE,SW,PrecipData);
+            var TempAvr = Average(NE,SW,TempData);
+            var CO2Avr = Average(NE,SW,CO2Data);
+            
+            //Write content of Rectangle info textbox
+            var string ="Rectangle Bounds (North East, South West): "+NE+","+SW+"\n";
+            string+="Precipitation Averages: "+PrecipAvr+"\n";
+            string+="Temperature Averages: "+TempAvr+"\n";
+            string+="CO2 Averages: "+CO2Avr+"\n";
+            
+            document.getElementById("RectangleTextArea").innerHTML=string;
+            
+            //Draw google line chart with the given average magnitudes
+      		drawChart(PrecipAvr,TempAvr, CO2Avr);
+}
+
+//write and display rectangle info
+function infowindowInfo(p){
+        //get position into global variable
+        position = p;
+        
+        //get latitude/longitude values of the selected position
+        var latLng = p.latLng;
+        
+        //set infowindow at that position
+        infowindow.setPosition(latLng);
+        
+        //write information into infowindow
+        var content = "";
+        
+        content+="Lat/Lng: ".bold()+(Math.round(latLng.lat()*100)/100)+", "+(Math.round(latLng.lng()*100)/100)+"<br>";
+        
+        //get actual year
+        var y = document.getElementById("timefield");
+        var year = parseInt(y.value);
+        
+        //get data values at selected position and year
+        var PrecipMgn = getMagnitude(PrecipData,latLng,year);
+        var TempMgn = getMagnitude(TempData,latLng,year);
+        var CO2Mgn = getMagnitude(CO2Data,latLng,year);
+        
+        //write values into infowindow
+        if(typeof PrecipMgn == "undefined")
+                PrecipMgn = "";
+        else
+                PrecipMgn = (Math.round(PrecipMgn*10)/10);
+        if(typeof TempMgn == "undefined")
+                TempMgn = "";
+        else
+                TempMgn = (Math.round(TempMgn*10)/10);
+        if(typeof CO2Mgn == "undefined")
+                CO2Mgn = "";
+        else
+                CO2Mgn = (Math.round(CO2Mgn*10000)/10000);
+        
+        content+="Precip: ".bold()+PrecipMgn+"<br>";
+        content+="Temp: ".bold()+TempMgn+"<br>";
+        content+="CO2: ".bold()+CO2Mgn;
+        
+        infowindow.setContent(content);
+        
+        infowindow.open(map);
 }
 
 </script>
@@ -486,8 +623,8 @@ function getMagnitude(data,latlng,year){
         <div id="timepanel">
                 <b>Time setups:</b>
                 &nbsp Year
-                <input id="timefield" type="number"  min="1900" max="2010" value="2000" step="1" onchange="TimeUpdate(this.value)" />
-                <input id = "slider" type="range" min="1900" max="2010" value="2000" step="1" onchange="TimeUpdate(this.value)" />
+                <input id="timefield" type="number"  min="1900" max="2010" value="2010" step="1" onchange="TimeUpdate(this.value)" />
+                <input id = "slider" type="range" min="1900" max="2010" value="2010" step="1" onchange="TimeUpdate(this.value)" />
                 <button onclick="setPlay(true), start()">&#9658</button>
                 <button onclick="stop()">&#8214</button>
                 &nbsp | &nbsp Animation speed
@@ -524,6 +661,8 @@ function getMagnitude(data,latlng,year){
         </div>
 
         <div style="width:1000px" id="map_canvas"></div>
+        
+        <div id="lineChart_div"></div>
         
         <div id="Text">
                 <textarea id="RectangleTextArea" cols="130" rows="10">
