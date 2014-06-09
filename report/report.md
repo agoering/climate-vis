@@ -1,5 +1,7 @@
 # ClimateVis: an interactive web app
-By Gene Krasnitskiy, Rudy Resch, Simon Wiedemann, and Andrea Yocom
+**By Gene Krasnitskiy, Rudy Resch, Simon Wiedemann, and Andrea Yocom.**
+
+*Hosted by Github at [https://github.com/ayocom/climate-vis](https://github.com/ayocom/climate-vis).*
 
 ## Executive Summary
 Our team has developed an interactive visualization of average annual temperature, total annual precipitation, and total annual carbon dioxide emissions. There are two tabs: a Map tab and a Science tab. 
@@ -8,7 +10,7 @@ Our team has developed an interactive visualization of average annual temperatur
 In the Map tab, users can watch the evolution of one or more of these variables at a time on a Google map. Users can also draw a rectangle around a region to produce a line plot of the average of each variable within the region over time. 
  
 ### Science Tab
-In the Science tab, users can manipulate both axes of a 2D scatterplot. The variables that can be chosen are year, average annual global temperature, total annual global precipitation, total annual global carbon dioxide emissions, and average annual Arctic sea ice extent.
+In the Science tab, users can manipulate both axes of a 2D scatterplot in order to explore correlations between variables. The variables that can be chosen are year, average annual global temperature, total annual global precipitation, total annual global anthropogenic carbon dioxide emissions, and average annual Arctic sea ice extent.
 
 ### See It in Action
 
@@ -32,6 +34,8 @@ We had several additional interests. These were the following:
 As we hunted for data for this project, the desire to build an intensity worldmap engulfed our original goals. We were able to find temperature, precipitation, and carbon dioxide emissions data which were mapped onto a latitude/longitude grid. For this reason, we focused first on the intensity heatmap and correlation plot for these variables, rather than sea level or oceanic temperature variables.
 
 ## Data 
+*** Gene, feel free to add to this section. ***
+
 
 ### Data Sources
 We found total monthly precipitation in millimeters[^precipData] and monthly air temperatures in degrees Celsius[^air_tempData] that had been projected onto a 0.5 degree latitude and longitude grid. These data are from measurements at stations, and are carefully verified and cleaned prior to release.
@@ -48,7 +52,6 @@ One such data reduction was to convert the precipitation and temperature data fr
 
 A second data reduction measure was to compute the annual average of air temperature data and the annual total of precipitation data at each latitude and longitude point. This reduction produced 40-50 MB files that were reasonable to deal with in the app. On the other hand, we lost interesting information about monthly fluctuations that previously existed in the temperature and precipitation data. If the project were to continue, we would look into hosting data elsewhere (potentially on Dropbox instead of Github), to avoid this limitation. This problem actually proved to be a major sticking point for this project.
 
-### Gene, feel free to add to this section. 
 
 ## Visualization Engine
 Simon, write things here! 
