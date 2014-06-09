@@ -3,7 +3,7 @@
 {% set title = "Map" %}
 
 {% block head %}
-<style> #map_canvas { margin: 0%; padding: 20%; height: 100%;}</style>
+<style> #map_canvas { margin: 0%; padding: 30%; width: auto; height: auto;}</style>
 
 <script src="http://maps.googleapis.com/maps/api/js?libraries=geometry,visualization,drawing&sensor=true_or_false"></script>
 
@@ -17,64 +17,87 @@
 {% endblock %}
 
 {% block content %}
-
+<div class="row">
+<div class="col-xs-3">
 <div id="panel">
-        		<b>Draw heat map:</b>
-                <button onclick="reinitializeMap(1)">Precipitation</button>
-                <button onclick="reinitializeMap(2)">Temperature</button>
-                <button onclick="reinitializeMap(3)">CO2 emission</button>
-        		&nbsp | &nbsp <b>Remove:</b>
-                <button onclick="removeMap(1)">Precipitation</button>
-                <button onclick="removeMap(2)">Temperature</button>
-                <button onclick="removeMap(3)">CO2 emission</button>
-        </div></br>
+	<div class="btn-group-vertical">
+	<b>Draw heat map:</b>
+	<button type="button" class="btn btn-default" onclick="reinitializeMap(1)">Precipitation</button>
+	<button type="button" class="btn btn-default" onclick="reinitializeMap(2)">Temperature</button>
+	<button type="button" class="btn btn-default" onclick="reinitializeMap(3)">CO2 emission</button>
+	</div>
+	<div class="btn-group-vertical">
+	<b>Remove:</b>
+	<button type="button" class="btn btn-default" onclick="removeMap(1)">Precipitation</button>
+	<button type="button" class="btn btn-default" onclick="removeMap(2)">Temperature</button>
+	<button type="button" class="btn btn-default" onclick="removeMap(3)">CO2 emission</button>
+	</div>
+</div></br>
         
-        <div id="timepanel">
-                <b>Time setups:</b>
-                &nbsp Year
-                <input id="timefield" type="number"  min="1900" max="2010" value="2000" step="1" onchange="TimeUpdate(this.value)" />
-                <input id = "slider" type="range" min="1900" max="2010" value="2000" step="1" onchange="TimeUpdate(this.value)" />
-                <button onclick="setPlay(true), start()">&#9658</button>
-                <button onclick="stop()">&#8214</button>
-                &nbsp | &nbsp Animation speed
-                <input id="speedfield" type="number"  min="100" max="10000" step="100" onchange="setAnimationSpeed(this.value)" />
-                ms
-                &nbsp | &nbsp Years steps
-                <input id="stepfield" type="number"  min="1" max="21" step="1" onchange="setStep(this.value)" />
-        </div> </br>
+<div id="timepanel">
+		Animate:<br>
+		Year
+		<input id="timefield" type="number"  min="1900" max="2010" value="2000" step="1" onchange="TimeUpdate(this.value)" />
+		<input id = "slider" type="range" min="1900" max="2010" value="2000" step="1" onchange="TimeUpdate(this.value)" />
+		<button type="button" class="btn btn-default" onclick="setPlay(true), start()">
+			<span class="glyphicon glyphicon-play"></span>		
+		</button>
+		<button type="button" class="btn btn-default" onclick="stop()">
+			<span class="glyphicon glyphicon-stop"></span>	
+		</button>
+		<br>
+		Animation speed
+		<input id="speedfield" type="number"  min="100" max="10000" step="100" onchange="setAnimationSpeed(this.value)" />
+		ms
+		<br>
+		Step
+		<input id="stepfield" type="number"  min="1" max="21" step="1" onchange="setStep(this.value)" />
+		Years
+</div> </br>
 
-        <div id="parameters">
-                <b>Change opacity:</b> </br>
-                Precipitation
-                <input id = "PrecipOpacitySlider" type="range" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,1)" />
-                <input id="PrecipOpacityField" type="number" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,1)" />
-                &nbsp | &nbsp Temperature
-                <input id = "TempOpacitySlider" type="range" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,2)" />
-                <input id="TempOpacityField" type="number" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,2)" />
-                &nbsp | &nbsp CO2
-                <input id = "CO2OpacitySlider" type="range" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,3)" />
-                <input id="CO2OpacityField" type="number" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,3)" />
+<div id="parameters">
+		Opacity <br>
+		
+		<input id="PrecipOpacityField" type="number" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,1)" />
+		Precipitation
+		<input id = "PrecipOpacitySlider" type="range" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,1)" />
+		
+		<input id="TempOpacityField" type="number" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,2)" />
+		Temperature
+		<input id = "TempOpacitySlider" type="range" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,2)" />
+		
+		<input id="CO2OpacityField" type="number" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,3)" />
+		CO2
+		<input id = "CO2OpacitySlider" type="range" min="0.01" max="1" value="0.8" step="0.01" onchange="setOpacity(this.value,3)" />
 
-                </br>
-                <b>Change density radius:</b> </br>
-                Precipitation
-                <input id = "PrecipRadiusSlider" type="range" min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,1)" />
-                <input id="PrecipRadiusField" type="number"  min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,1)" />
-                &nbsp | &nbsp Temperature
-                <input id = "TempRadiusSlider" type="range" min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,2)" />
-                <input id="TempRadiusField" type="number"  min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,2)" />
-                &nbsp | &nbsp CO2
-                <input id = "CO2RadiusSlider" type="range" min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,3)" />
-                <input id="CO2RadiusField" type="number"  min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,3)" />
+		</br>
+		Density Radius <br>
+		
+		<input id="PrecipRadiusField" type="number"  min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,1)" />
+		Precipitation
+		<input id = "PrecipRadiusSlider" type="range" min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,1)" />
+		
+		<input id="TempRadiusField" type="number"  min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,2)" />
+		Temperature
+		<input id = "TempRadiusSlider" type="range" min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,2)" />
+		
+		<input id="CO2RadiusField" type="number"  min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,3)" />
+		CO2
+		<input id = "CO2RadiusSlider" type="range" min="0.1" max="5" value="1.4" step="0.05" onchange="setRadius(this.value,3)" />
+</div>
+</div>
 
-        </div>
+<div class="col-xs-9">
+<div id="map_canvas"></div>
+</div>
+</div>
 
-        <div style="width:1000px" id="map_canvas"></div>
-        
-        <div id="Text">
-                <textarea id="RectangleTextArea" cols="130" rows="10">
-                        The rectangle information will show up here
-                </textarea>
-        </div>
+<div class="row">
+<div id="Text">
+		<textarea id="RectangleTextArea" cols="130" rows="10">
+				The rectangle information will show up here
+		</textarea>
+</div>
+</div>
 
 {% endblock %}

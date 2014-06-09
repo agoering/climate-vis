@@ -81,11 +81,11 @@ function getCorrelation(xArray, yArray) {
 	return {r: r, m: m, b: b};
 }
 
-d3.csv('static/data/AllQuakes.csv', function(data) {
+d3.csv('static/data/yr_Precip_Temp_CO2_Ice_fixed.csv', function(data) {
 
-	var xAxis = 'Year', yAxis = 'Magnitude';
-	var xAxisOptions = ["Year", "Latitude", "Longitude", "Depth", "Magnitude"]
-	var yAxisOptions = ["Year", "Latitude", "Longitude", "Depth", "Magnitude"];
+	var xAxis = 'Year', yAxis = 'Precipitation';
+	var xAxisOptions = ["Year", "Precipitation", "Temperature", "CO2", "Ice"]
+	var yAxisOptions = ["Year", "Precipitation", "Temperature", "CO2", "Ice"];
 	var keys = _.keys(data[0]);
 	var data = parseData(data);
 	var bounds = getBounds(data, 1);
@@ -210,7 +210,7 @@ d3.csv('static/data/AllQuakes.csv', function(data) {
 					return isNaN(d[yAxis]) ? d3.select(this).attr('cy') : yScale(d[yAxis]);
 				})
 				.attr('r', function(d) {
-					return isNaN(d[xAxis]) || isNaN(d[yAxis]) ? 0 : 1;
+					return isNaN(d[xAxis]) || isNaN(d[yAxis]) ? 0 : 5;
 				});
 
 		// Also update the axes
