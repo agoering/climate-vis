@@ -29,6 +29,8 @@ rectangles.push(new google.maps.Rectangle({
     })
 );
 
+var rectangle;
+
 var play = false;
 
 var gradient1 = ['rgba(0, 227, 229, 0)',
@@ -119,7 +121,7 @@ function initialize() {
             rectangles.clear();
             
             //Get drawn rectangle into a variable
-            var rectangle = event.overlay;
+            rectangle = event.overlay;
             rectangle.type = event.type;
 			
             //Plot and display rectangle info
@@ -496,9 +498,9 @@ function drawChart(p, t, c){
         //google.load("visualization", "1", {packages:["corechart"]});
         var options = {
         		title: 'Average values inside the rectangle bounds',
-                vAxes: {0: {logScale: false, title: "Precip average magnitude"},
-            			1: {logScale: false, title: "Temp average magnitude",textPosition: "in"},
-                        2: {logScale: false, title: "CO2 average magnitude", textPosition: "out"}
+                vAxes: {0: {logScale: false, title: "Precipitation (mm)"},
+            			1: {logScale: false, title: "Temperature (C)",textPosition: "in"},
+                        2: {logScale: false, title: "CO2 (ppm)", textPosition: "out"}
                 },
     			series:{
                        0:{targetAxisIndex:0},
@@ -514,10 +516,10 @@ function drawChart(p, t, c){
 //write content of rectangle information
 
 //Plot and write rectangle info
-function rectangleInfo(rectangle){
+function rectangleInfo(rect){
 			//Get rectangle bounds
-            var NE = rectangle.getBounds().getNorthEast();
-            var SW = rectangle.getBounds().getSouthWest();
+            var NE = rect.getBounds().getNorthEast();
+            var SW = rect.getBounds().getSouthWest();
             
             //Get average data inside rectangle
             var PrecipAvr = Average(NE,SW,PrecipData);
@@ -582,4 +584,9 @@ function infowindowInfo(p){
         infowindow.setContent(content);
         
         infowindow.open(map);
+}
+
+
+window.onresize = function(event) {
+rectangleInfo(window.rectangle);
 }
