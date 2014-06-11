@@ -9,11 +9,28 @@
 	li.selected {
 		font-weight: bold;
 	}
+	#chart {width: 100%; height: 100%;}
+	#x-axis-menu {padding: 0;}
+	#y-axis-menu {padding: 0;}
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="col-xs-2">
+<div id="menu">
+	<h2>&uarr; Y axis</h2>
+	<ul id="y-axis-menu"></ul>
+	<h2>&rarr; X axis</h2>
+	<ul id="x-axis-menu"></ul>
+</div>
+</div>
+<div id="chartContainer" class="col-xs-10">
+<div id="chart"></div>
+</div>
+
 <script>
+var w = document.getElementById("chart").offsetWidth;
+var h = 500;
 // HELPERS
 function parseData(d) {
 	var keys = _.keys(d[0]);
@@ -83,9 +100,9 @@ function getCorrelation(xArray, yArray) {
 
 d3.csv('static/data/yr_Precip_Temp_CO2_Ice_fixed.csv', function(data) {
 
-	var xAxis = 'Year', yAxis = 'Precipitation';
-	var xAxisOptions = ["Year", "Precipitation", "Temperature", "CO2", "Ice"]
-	var yAxisOptions = ["Year", "Precipitation", "Temperature", "CO2", "Ice"];
+	var xAxis = 'Year', yAxis = 'Precipitation (mm)';
+	var xAxisOptions = ["Year", "Precipitation (mm)", "Temperature (C)", "CO2 (ppm)", "Ice (km^2)"]
+	var yAxisOptions = ["Year", "Precipitation (mm)", "Temperature (C)", "CO2 (ppm)", "Ice (km^2)"];
 	var keys = _.keys(data[0]);
 	var data = parseData(data);
 	var bounds = getBounds(data, 1);
@@ -93,13 +110,13 @@ d3.csv('static/data/yr_Precip_Temp_CO2_Ice_fixed.csv', function(data) {
 	// SVG AND D3 STUFF
 	var svg = d3.select("#chart")
 			.append("svg")
-			.attr("width", 1000)
-			.attr("height", 640);
+			.attr("width", w)
+			.attr("height", h+50);
 	var xScale, yScale;
 
 	svg.append('g')
 			.classed('chart', true)
-			.attr('transform', 'translate(80, -60)');
+			.attr('transform', 'translate(80, -50)');
 
 	// Build menus
 	d3.select('#x-axis-menu')
@@ -148,12 +165,14 @@ d3.csv('static/data/yr_Precip_Temp_CO2_Ice_fixed.csv', function(data) {
 	// Axis labels
 	d3.select('svg g.chart')
 			.append('text')
-			.attr({'id': 'xLabel', 'x': 400, 'y': 670, 'text-anchor': 'middle'})
+			.attr({'id': 'xLabel', 'x': window.w/2, 'y': h+70, 'text-anchor': 'middle'})
+			.text(xAxis);
 
 	d3.select('svg g.chart')
 			.append('text')
-			.attr('transform', 'translate(-60, 330)rotate(-90)')
+			.attr('transform', 'translate(-70,' + h/2 + ')rotate(-90)')
 			.attr({'id': 'yLabel', 'text-anchor': 'middle'})
+			.text(yAxis);
 
 	// Render points
 	updateScales();
@@ -178,11 +197,11 @@ d3.csv('static/data/yr_Precip_Temp_CO2_Ice_fixed.csv', function(data) {
 
 	updateChart(true);
 	updateMenus();
-
+	
 	// Render axes
 	d3.select('svg g.chart')
 			.append("g")
-			.attr('transform', 'translate(0, 630)')
+			.attr('transform', 'translate(0,' + h + ')')
 			.attr('id', 'xAxis')
 			.call(makeXAxis);
 
@@ -196,7 +215,10 @@ d3.csv('static/data/yr_Precip_Temp_CO2_Ice_fixed.csv', function(data) {
 
 	//// RENDERING FUNCTIONS
 	function updateChart(init) {
+		svg.attr("width", window.w);
+		
 		updateScales();
+		
 
 		d3.select('svg g.chart')
 				.selectAll('circle')
@@ -223,7 +245,8 @@ d3.csv('static/data/yr_Precip_Temp_CO2_Ice_fixed.csv', function(data) {
 				.call(makeYAxis);
 
 		// Update axis labels
-		d3.select('#xLabel')
+		d3.select('#xLabel').text(xAxis).attr('x',w/2);
+		d3.select('#yLabel').text(yAxis);
 
 		// Update correlation
 		var xArray = _.map(data, function(d) {return d[xAxis];});
@@ -232,29 +255,27 @@ d3.csv('static/data/yr_Precip_Temp_CO2_Ice_fixed.csv', function(data) {
 		var x1 = xScale.domain()[0], y1 = c.m * x1 + c.b;
 		var x2 = xScale.domain()[1], y2 = c.m * x2 + c.b;
 
-		// Fade in
-		d3.select('#bestfit')
-				.style('opacity', 0)
-				.attr({'x1': xScale(x1), 'y1': yScale(y1), 'x2': xScale(x2), 'y2': yScale(y2)})
-				.transition()
-				.duration(1500)
-				.style('opacity', 1);
 	}
 
 	function updateScales() {
 		xScale = d3.scale.linear()
 				.domain([bounds[xAxis].min, bounds[xAxis].max])
-				.range([20, 780]);
+				.range([20, window.w-100]);
 
 		yScale = d3.scale.linear()
 				.domain([bounds[yAxis].min, bounds[yAxis].max])
-				.range([600, 100]);
+				.range([window.h-10, 100]);
 	}
 
 	function makeXAxis(s) {
 		s.call(d3.svg.axis()
 				.scale(xScale)
 				.orient("bottom"));
+		s.selectAll("text")
+				.attr("y",0)
+				.attr("x",9)
+				.attr("transform","rotate(90)")
+				.style("text-anchor","start");
 	}
 
 	function makeYAxis(s) {
@@ -276,6 +297,11 @@ d3.csv('static/data/yr_Precip_Temp_CO2_Ice_fixed.csv', function(data) {
 				});
 	}
 
+window.onresize = function(){
+	window.w = document.getElementById("chart").offsetWidth;
+	updateChart();
+};
+
 })
 
 /**
@@ -283,19 +309,5 @@ d3.csv('static/data/yr_Precip_Temp_CO2_Ice_fixed.csv', function(data) {
  */
 
 </script>
-<div class="col-xs-2">
-<div id="menu">
-	<h2>&uarr; Y axis</h2>
-	<ul id="y-axis-menu"></ul>
-	<h2>&rarr; X axis</h2>
-	<ul id="x-axis-menu"></ul>
-</div>
-</div>
-<div class="col-xs-10">
-<div id="chart"></div>
-</div>
-
-
-
 	
 {% endblock %}
