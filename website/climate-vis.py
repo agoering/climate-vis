@@ -10,9 +10,13 @@ def home():
 def map():
 	return render_template('map.html')
 	
-@app.route('/science')
-def science():
-	return render_template('science.html')
+@app.route('/correlations')
+def correlations():
+	return render_template('correlations.html')
+
+@app.route('/rate_correlations')
+def rate_correlations():
+	return render_template('rate_correlations.html')
 	
 if __name__ == '__main__':
 	app.run(debug=True)
