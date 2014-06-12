@@ -34,7 +34,13 @@ We had several additional interests. These were the following:
 As we hunted for data for this project, the desire to build an intensity worldmap engulfed our original goals. We were able to find temperature, precipitation, and carbon dioxide emissions data which were mapped onto a latitude/longitude grid. For this reason, we focused first on the intensity heatmap and correlation plot for these variables, rather than sea level or oceanic temperature variables.
 
 ## Data 
-*** Gene, feel free to add to this section. ***
+One of the interesting questions that prompted our query was, does global warming lead to increased precipitation in wet places and decreased precipitation in dry places?  We wanted to look at temperature correlation with precipitation and also correlate that with CO2 emissions and Arctic sea ice extent.  One of the data manipulations we could perform was to look at places where annual total precipitation is above a certain high threshold, or those for which it is below a certain low threshold.  The former could be considered wet places and the latter dry places.  It was interesting to discover that the trend for these is pretty much the same - precipitation decreased over the past century for wet as well as for dry places.  It is difficult to conclude from the data so far whether this is a cyclical trend and precipitation will increase again, or if there is a new normal for the annual precipitation.  As expected, average annual temperature has risen over the century, as we also observe decrease in the extent of Arctic sea ice and exponential rise in global CO2 emissions.
+
+It would be interesting to add other variables such as El Nino cycles, global sea level rise, ocean current distribution, etc.
+
+It is interesting to look at the data distributed over lattitude and longitude since it allows us to consider different regions and local trends within those regions.
+
+It would also be interesting to consider certain periods of time such as summer versus winter and the trends in the variables observed over those periods.
 
 
 ### Data Sources
