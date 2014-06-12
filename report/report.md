@@ -9,8 +9,11 @@ Our team has developed an interactive visualization of average annual temperatur
 ### Map Tab
 In the Map tab, users can watch the evolution of one or more of these variables at a time on a Google map. Users can also draw a rectangle around a region to produce a line plot of the average of each variable within the region over time. 
  
-### Science Tab
-In the Science tab, users can manipulate both axes of a 2D scatterplot in order to explore correlations between variables. The variables that can be chosen are year, average annual global temperature, total annual global precipitation, total annual global anthropogenic carbon dioxide emissions, and average annual Arctic sea ice extent.
+### Correlations Tab
+In the Correlations tab, users can manipulate both axes of a 2D scatterplot in order to explore correlations between variables. The variables that can be chosen are year, average annual global temperature, total annual global precipitation, total annual global anthropogenic carbon dioxide emissions, and average annual Arctic sea ice extent.
+
+### Rates Tab
+In the Rates tab, users can search for correlations in the slope of each variable.  These slopes are found by doing a linear fit to 6 points at a time in a similar method as doing boxcar smoothing.
 
 ### See It in Action
 
@@ -19,6 +22,22 @@ To see our web app, clone our [Github repository](https://github.com/ayocom/clim
 ```
 python climate-vis.py
 ```
+
+In order to run the project, you will need to have installed flask:
+
+```
+pip install flask
+```
+
+Pip is a package manager for python.  If you do not currently have it, it needs to be installed as well.
+
+After starting ```climate-vis.py``` you can navigate to:
+
+```
+localhost:5000
+```
+
+in your web browser to view the project.
 
 ## Project Design
 
