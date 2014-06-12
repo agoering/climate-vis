@@ -54,8 +54,25 @@ A second data reduction measure was to compute the annual average of air tempera
 
 
 ## Visualization Engine
-Simon, write things here! 
+We decided to visualise the data with heat maps. The heat maps show the spatial distribution of the data values at a specific year. We also decided to provide to the user with some control parameters and selection tools, in order to facilitate the qualitative analysis of the data. 
 
+**Control parameters:**
+At first, the user is able to select/remove the desired heat map. He is also able to represent more than one heat map at the same time. 
+At second, the user is able to select the data for a year in between 1900-2010. He is also able to animate the data, and select the year steps and the time it takes to update the heat map. 
+Finally, the user is able to zoom into the map, change the opacity of each heat map and change the radius of influence of each data point.
+
+**Rectangle tool:**
+The user is able to select with the rectangle tool a region on the map. The average data values inside the rectangle will be calculated and a line chart displaying the average values over the years will show up under the map. Also, the calculated averages will be displayed at the text box that is located at the bottom of the page. 
+
+**Information at a specific point on the map:**
+Right click on a specific location on the map, and the values of the data will show up in an info window on the map.
+
+**Improvements:**
+We would like to suggest some improvement to the visualisation engine. 
+First problem we noticed is, that the change in the average air temperature over the years is almost not noticeable. The reason for that liyes on the method that the google api library uses to represent the heat map colours. The google library assigns to each data value a color from the selected gradient, depending on the weight magnitude and the density of data points. Google takes the minimum and maximum value of the data, and interpolates its range with the colours of the gradient. Since the temperature data has a wide range value (approx. from -60 to 40 °C), and the average temperature fluctuation are comparably small (before year 2000 approx.  2° and after 5°), the color at the region will not noticeable change.
+Second, the animation speed performance might be improvable. 
+Third, incorporate a color legend (Google maps api still doesn’t provide that feature for heat maps). 
+Finally, the user should be able to draw more than one rectangle on the map and display the information of several regional values at the same time. 
 ## Web App Framework
 Rudy, write things here! 
 
