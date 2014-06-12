@@ -19,7 +19,7 @@ var maxCO2 = 74.1;
 var infowindow = new google.maps.InfoWindow();
 var position = 0;
 
-//Initialize rectangle array (in order to delete element after new rectangle is selected)
+//Define rectangle array (in order to delete element after new rectangle is selected)
 var rectangles = new google.maps.MVCArray();
 rectangles.push(new google.maps.Rectangle({
 		bounds: new google.maps.LatLngBounds(
@@ -64,15 +64,6 @@ var gradient3 = ['rgba(107, 255, 150, 0)',
 
 //INITIALIZE VISUALIZATION-----------------------------------------
 function initialize() {
-    
-        //Set Animation speed & years steps
-		setAnimationSpeed(1500);
-        setStep(5);
-
-		//Initialize Heatmap Data array
-        PrecipHeatData = new google.maps.MVCArray();
-        TempHeatData = new google.maps.MVCArray();
-        CO2HeatData = new google.maps.MVCArray();
 
 		//Map Options
         var mapOptions = {
@@ -80,7 +71,7 @@ function initialize() {
                 center: new google.maps.LatLng(5,45),
                 mapTypeId: google.maps.MapTypeId.TERRAIN,
                 center: new google.maps.LatLng(0, 0),
-                zoom: 1
+                zoom: 2
         };
 		
         //Set map into canvas
@@ -89,7 +80,7 @@ function initialize() {
 
 //DRAWING MANAGER------------------------------------------------------
 
-        //Initialize drawing manager
+        //Define drawing manager
         drawingManager = new google.maps.drawing.DrawingManager({
                 drawingControl: true,
                 drawingControlOptions: {
@@ -100,7 +91,7 @@ function initialize() {
                 },
         });
 		
-        //Set drawing manager into the map
+        //Set drawing manager into map
         drawingManager.setMap(map);
         
         //Set rectangle options
@@ -113,7 +104,7 @@ function initialize() {
                 }
   		});
         
-        //Listen to drawing completed
+        //Listen to event drawing completed
         google.maps.event.addListener(drawingManager, 'overlaycomplete', function(event) {
             
             //Delete previous rectangle
@@ -124,13 +115,13 @@ function initialize() {
             rectangle = event.overlay;
             rectangle.type = event.type;
 			
-            //Plot and display rectangle info
+            //Plot and display the info inside the rectangle
             rectangleInfo(rectangle);
             
             //push rectangle to array
             rectangles.push(rectangle);
 			
-            //change rectangle bounds, info and chart when bounds of rectangle where changed
+            //Listen to bounds of rectangle changed event. Update info and plot when
             google.maps.event.addListener(rectangle, 'bounds_changed', function(){
             		rectangleInfo(rectangle);
             });
@@ -143,23 +134,28 @@ function initialize() {
         google.maps.event.addListener(map, "rightclick", function (e) {
         		//Dsiplay datainformation at infowindow
         		infowindowInfo(e);
+        		
+        		infowindow.open(map);
         });
         
         
 //DATA TO MAP------------------------------------------------------------------
-
+		
+		//Define heat map data array
+        PrecipHeatData = new google.maps.MVCArray();
+        TempHeatData = new google.maps.MVCArray();
+        CO2HeatData = new google.maps.MVCArray();
+		
         //get the index to find data at selected year
         var index = 2010-minYear+3;
         
-        //push Precipitation data to precipitation heat map array
+        //push precipitation data to precipitation heat map array
         for (var i = 0; i < PrecipData.length; i+=1) {
                 var latLng = new google.maps.LatLng(parseFloat(PrecipData[i][2]), parseFloat(PrecipData[i][1]));
                 var magnitude = parseFloat(PrecipData[i][index]);
                 var weightedLoc = {
                         location: latLng,
-                        weight:magnitude,
-                        center: new google.maps.LatLng(10, 0),
-                		zoom: 1
+                        weight:magnitude
                 };
                 PrecipHeatData.push(weightedLoc);
         };
@@ -174,7 +170,7 @@ function initialize() {
                         weight:minPrecip
                 });
         
-        //push Temperature data to temperature heat map array
+        //push temperature data to temperature heat map array
         for (var i = 0; i < TempData.length; i+=1) {
                 var latLng = new google.maps.LatLng(parseFloat(TempData[i][2]), parseFloat(TempData[i][1]));
                 //magnitudes have to be > 0
@@ -222,7 +218,7 @@ function initialize() {
         });
 
 
-//INITIALIZE MAP--------------------------------------
+//INITIALISE HEAT MAP--------------------------------------
 
         PrecipMap = new google.maps.visualization.HeatmapLayer({
                 data: PrecipHeatData,
@@ -247,13 +243,17 @@ function initialize() {
         
         //choose gradient
         setGradient(gradient1,1);
-        //setGradient(gradient2,2);
+        setGradient(gradient2,2);
         setGradient(gradient3,3);
         
         //At first, show empty map
         removeMap(1);
         removeMap(2);
         removeMap(3);
+        
+        //Set Animation speed & years steps
+		setAnimationSpeed(1500);
+        setStep(5);
 }
 
 
@@ -294,20 +294,13 @@ function drawHeat(year){
         });
         
         CO2Map.set('data',CO2HeatData);
-        
-       var max = TempHeatData.getAt(0).weight;
-        for(var i =1; i< TempHeatData.getLength();i++){
-        		if (max<TempHeatData.getAt(i).weight){
-                		max = TempHeatData.getAt(i).weight;
-                }
-        }
 }
 
 function TimeUpdate(newValue){
 		//Update Heat maps
         drawHeat(newValue);
         
-        //Set values of year slider and time text field
+        //Set values of year-slider and time-textfield
         var input = document.getElementById("slider");
         var number = document.getElementById("timefield");
 		input.value = newValue;
@@ -316,7 +309,7 @@ function TimeUpdate(newValue){
 
 function start() {
 		
-        //get year value of time text field
+        //get year value of time-textfield
         var number = document.getElementById("timefield");
         var timeValue = parseInt(number.value)+parseInt(step);
         
@@ -513,8 +506,6 @@ function drawChart(p, t, c){
         chart.draw(pltArray, options);
 }
 
-//write content of rectangle information
-
 //Plot and write rectangle info
 function rectangleInfo(rect){
 			//Get rectangle bounds
@@ -538,7 +529,7 @@ function rectangleInfo(rect){
       		drawChart(PrecipAvr,TempAvr, CO2Avr);
 }
 
-//write and display infowindow info
+//write and display content of infowindow 
 function infowindowInfo(p){
         //get position into global variable
         position = p;
@@ -582,8 +573,6 @@ function infowindowInfo(p){
         content+="CO2: ".bold()+CO2Mgn;
         
         infowindow.setContent(content);
-        
-        infowindow.open(map);
 }
 
 
