@@ -70,17 +70,17 @@ It would be interesting to add other variables such as El Nino cycles, global se
 ## Visualization Engine
 We decided to visualise the data with heat maps. The heat maps show the spatial distribution of the data values at a specific year. We also decided to provide to the user with some control parameters and selection tools, in order to facilitate the qualitative analysis of the data. 
 
-**Control parameters:**
+### Control parameters
 At first, users are able to select/remove the desired heat map. They may also represent more than one heat map at the same time. Second, users may select the data for a year in between 1900-2010. They may also animate the data by selecting the years passed per step and the time it takes to update the heat map. 
 Finally, users may zoom into the map, change the opacity of each heat map and change the radius of influence of each data point.
 
-**Rectangle tool:**
+### Rectangle tool
 The user is able to select with the rectangle tool a region on the map. The average data values inside the rectangle will be calculated and a line chart displaying the average values over the years will show up under the map. Also, the calculated averages will be displayed in the text box that is located at the bottom of the page, for easy selection in the case that analysis external to the web app is desired.
 
-**Information at a specific point on the map:**
+### Information at a specific point on the map
 Right click on a specific location on the map, and the values of the data will show up in an info window on the map.
 
-**Improvements:**
+### Improvements
 We would like to suggest some improvements to the visualization engine. 
 The first problem we noticed is that the change in the average air temperature over the years is almost not noticeable, due to the method by which the Google API library represents the heat map colors. The Google library assigns to each data value a color from the selected gradient, depending on the weight magnitude and the density of data points. Google takes the minimum and maximum value of the data, and interpolates its range with the colours of the gradient. Since the temperature data has a wide range (approx. -60 to 40 degrees Celsius), and since the average temperature fluctuations are comparably small (before the year 2000, approx. 2 degrees Celsius and after, 5 degrees Celsius), the color in the region does not noticeable change.
 
