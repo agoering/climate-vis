@@ -98,8 +98,21 @@ First problem we noticed is, that the change in the average air temperature over
 Second, the animation speed performance might be improvable. 
 Third, incorporate a color legend (Google maps api still doesn’t provide that feature for heat maps). 
 Finally, the user should be able to draw more than one rectangle on the map and display the information of several regional values at the same time. 
+
 ## Web App Framework
-Rudy, write things here! 
+The web app framework for this project was designed using Bootstrap and Flask.
+Bootstrap takes care of a majority of the layout involved with producing webpages, specifically it supplies an easy to use way to create gridded content organized by columns and rows.
+The template (dashboard) for laying out the menus and content was supplied as a basic example for bootstrap, which then needed to be extended for our project.
+Another feature that bootstrap provided was the ability to selectively mask components depending on the size of the browser window.
+This is helpful for when you need to view the app on a smaller screen, or snap a window to fill only half of a screen but still want to be able to view as much of the useful content of the page as possible.
+Flask is a web framework for python and it was chosen as a simple system to reduce the amount of code copying for elements that would be used on multiple pages.
+This is done by having a base template with all of the navigation elements and global javascript, then having the remainder of the content separated out into simpler pages.
+If something needed to be changed in the global framework, the changes would then not need to be patched to each individual page.
+In addition, flask would allow future extensions of the project could use actual python code in order to perform data manipulation and analysis such as fitting and future projections.
+This would also be useful to replace some of the javascript code with more flexible python scripts if we had more time.
+The flask framework also allows simplification of the urls for a web app by creating paths to the actual html code displayed on the page.
+Given time to implement some of the improvements/extensions to the project, this would allow us to better organize the app as the number of pages increased.
+
 
 ### References
 
